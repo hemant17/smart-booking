@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('service_id')->constrained();
+            $table->string('client_email');
+            $table->datetime('start_at');
+            $table->datetime('end_at');
             $table->timestamps();
+
+            $table->unique(['service_id', 'start_at']);
         });
     }
 
