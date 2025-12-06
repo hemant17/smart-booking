@@ -1,59 +1,173 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Smart Booking Scheduler
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A full-stack appointment booking system with availability management and conflict prevention.
 
-## About Laravel
+## Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Smart Booking Scheduler is a SPA (Single Page Application) built for service-based businesses to manage appointments and working schedules. The system features:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Client Booking Interface**: Browse services, view available time slots, and book appointments
+- **Admin Management**: Create and manage working rules with flexible scheduling options
+- **Real-time Availability**: Automatically prevents double bookings and conflicts
+- **Flexible Scheduling**: Support for weekly recurring and specific date-based working rules
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech Stack
 
-## Learning Laravel
+- **Backend**: Laravel 11
+- **Frontend**: Vue 3 with Composition API
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **Database**: MySQL/PostgreSQL
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Setup Instructions
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Prerequisites
+- PHP 8.2+
+- Composer
+- Node.js & npm
+- MySQL or PostgreSQL
 
-## Laravel Sponsors
+### 1. Install Dependencies
+```bash
+composer install
+npm install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 2. Environment Configuration
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-### Premium Partners
+Configure your database in `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=smart_booking
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Database Setup
+```bash
+php artisan migrate
+php artisan db:seed
+```
 
-## Contributing
+The seeder will create:
+- 2 services: Haircut (30 min), Personal Training (60 min)
+- 2 weekly working rules: Monday & Tuesday, 09:00-17:00, 30-min intervals
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Start Development Servers
+```bash
+# Terminal 1: Laravel backend
+php artisan serve
 
-## Code of Conduct
+# Terminal 2: Vite frontend
+npm run dev
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Visit `http://localhost:8000` to access the application.
 
-## Security Vulnerabilities
+## API Routes
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Services
+- `GET /api/services` - List all available services
+
+### Availability
+- `GET /api/availability?date={date}&service_id={id}` - Get available slots for a specific date and service
+
+### Bookings
+- `POST /api/bookings` - Create a new appointment
+  ```json
+  {
+    "service_id": 1,
+    "start_at": "2025-01-15T10:00:00",
+    "client_email": "client@example.com"
+  }
+  ```
+
+### Working Rules
+- `POST /api/working-rules` - Create a new working rule
+  ```json
+  {
+    "type": "weekly",
+    "weekday": 1,
+    "start_time": "09:00",
+    "end_time": "17:00",
+    "slot_interval": 30,
+    "active": true
+  }
+  ```
+
+## Features & Edge Cases Handled
+
+### Booking System
+- **Conflict Prevention**: Automatically checks for overlapping appointments
+- **Past Date Protection**: Cannot book time slots that have already passed
+- **Service Duration**: Slot generation considers service duration
+- **Unique Constraints**: Database-level uniqueness prevents double bookings
+
+### Working Rules
+- **Weekly Recurring**: Set regular working hours for specific weekdays (1-7, where 1=Monday)
+- **Specific Dates**: Create custom schedules for particular dates
+- **Flexible Intervals**: Configurable time slot intervals (in minutes)
+- **Active Toggle**: Enable/disable rules without deleting them
+
+### Frontend
+- **Reactive UI**: Vue 3 Composition API for responsive user experience
+- **Real-time Updates**: Automatic slot availability refresh after booking
+- **Form Validation**: Client-side and server-side validation
+- **Error Handling**: User-friendly error messages for conflicts and validation failures
+
+## Database Schema
+
+### Services
+- `id` - Primary key
+- `name` - Service name
+- `duration_minutes` - Service duration in minutes
+- `timestamps` - Created/updated timestamps
+
+### Working Rules
+- `id` - Primary key
+- `type` - "weekly" or "date"
+- `weekday` - Day of week (1-7) for weekly rules
+- `date` - Specific date for date rules
+- `start_time` - Working day start time
+- `end_time` - Working day end time
+- `slot_interval` - Time slot interval in minutes
+- `active` - Rule status
+
+### Appointments
+- `id` - Primary key
+- `service_id` - Foreign key to services
+- `client_email` - Client email address
+- `start_at` - Appointment start time
+- `end_at` - Appointment end time
+- `timestamps` - Created/updated timestamps
+- Unique index on `(service_id, start_at)` to prevent double bookings
+
+## Application Routes
+
+- `/` - Client booking page
+- `/admin/rules` - Admin working rules management
+
+## Development
+
+### Adding New Features
+1. Create database migrations if needed
+2. Update models with relationships
+3. Add API endpoints in `routes/api.php`
+4. Create/update controllers in `app/Http/Controllers/Api/`
+5. Update Vue components in `resources/js/pages/`
+
+### Testing
+```bash
+php artisan test
+npm run test
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-source and available under the [MIT License](LICENSE).
