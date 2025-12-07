@@ -97,6 +97,7 @@ async function loadServices() {
     services.value = await response.json()
   } catch (error) {
     console.error('Error loading services:', error)
+    // TODO: Add user-friendly error message
   }
 }
 
@@ -111,6 +112,7 @@ async function loadSlots() {
     message.value = ''
   } catch (error) {
     console.error('Error loading slots:', error)
+    // Maybe show an error to user?
   } finally {
     loading.value = false
   }

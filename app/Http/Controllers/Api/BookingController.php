@@ -13,6 +13,7 @@ class BookingController extends Controller
 {
     public function store(Request $request)
     {
+        // Validate the booking request
         $request->validate([
             'service_id' => 'required|exists:services,id',
             'start_at' => 'required|date|after:now',
@@ -23,7 +24,9 @@ class BookingController extends Controller
         $startAt = Carbon::parse($request->start_at);
         $endAt = $startAt->copy()->addMinutes($service->duration_minutes);
 
+        // Use transaction to prevent race conditions
         return DB::transaction(function () use ($request, $service, $startAt, $endAt) {
+            // Check for overlapping appointments
             $conflict = Appointment::where('service_id', $service->id)
                 ->where(function($query) use ($startAt, $endAt) {
                     $query->where('start_at', '<', $endAt)
@@ -32,11 +35,13 @@ class BookingController extends Controller
                 ->first();
 
             if ($conflict) {
+                // TODO: Add more specific error message about when the slot is taken
                 return response()->json([
                     'message' => 'Time slot is already booked'
                 ], 409);
             }
 
+            // Create the appointment
             $appointment = Appointment::create([
                 'service_id' => $service->id,
                 'client_email' => $request->client_email,
